@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Cotizador de Seguros Ind. y Comercio</title>
+  <!-- jsPDF desde CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f7fb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #0d47a1, #1565c0);
+      color: white;
+      padding: 1.5rem 1.2rem;
+      text-align: center;
+    }
+    .header h1 { font-size: 1.4rem; margin-bottom: 0.2rem; }
+    .header p { opacity: 0.9; font-size: 0.9rem; }
+    .form-body {
+      padding: 1.2rem;
+    }
+    .input-group {
+      margin-bottom: 0.8rem;
+    }
+    .input-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.2rem;
+      text-transform: uppercase;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: 0.2s;
+      background: #fafafa;
+    }
+    .input-group input:focus {
+      outline: none;
+      border-color: #1565c0;
+      box-shadow: 0 0 0 3px rgba(21,101,192,0.1);
+    }
+    .row {
+      display: flex;
+      gap: 0.8rem;
+    }
+    .row .input-group {
+      flex: 1;
+    }
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #1565c0;
+      margin: 1rem 0 0.5rem;
+      border-bottom: 2px solid #e3e8f0;
+      padding-bottom: 0.2rem;
+    }
+    .vrta-box {
+      background: #e8f0fe;
+      border-radius: 12px;
+      padding: 1rem;
+      text-align: center;
+      margin: 1rem 0;
+    }
+    .vrta-box span {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0d47a1;
+    }
+    .coverage-list {
+      background: #f9fafb;
+      border-radius: 12px;
+      padding: 0.8rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #333;
+    }
+    .coverage-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #eee;
+      padding: 0.2rem 0;
+    }
+    .coverage-item:last-child { border: none; }
+    .prima-box {
+      background: #1e293b;
+      color: white;
+      border-radius: 16px;
+      padding: 1rem;
+      margin: 1.2rem 0;
+      text-align: center;
+    }
+    .prima-box span {
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+      margin-top: 1rem;
+    }
+    .btn {
+      padding: 0.8rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: 0.2s;
+    }
+    .btn-pdf { background: #d32f2f; color: white; }
+    .btn-wa { background: #25d366; color: white; }
+    .btn-email { background: #0d47a1; color: white; }
+    .btn:active { transform: scale(0.97); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏭 Cotizador de Seguros</h1>
+      <p>Industria y Comercio</p>
+    </div>
+    <div class="form-body">
+      <div class="row">
+        <div class="input-group">
+          <label>Cliente</label>
+          <input type="text" id="cliente" placeholder="Nombre o razón social">
+        </div>
+        <div class="input-group">
+          <label>Actividad</label>
+          <input type="text" id="actividad" placeholder="Ej. Comercio al por mayor">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Agente de seguros</label>
+        <input type="text" id="agente" placeholder="Nombre del agente">
+      </div>
+
+      <div class="section-title">🏢 VALORES ASEGURABLES (USD)</div>
+      <div class="row">
+        <div class="input-group">
+          <label>Edificación</label>
+          <input type="text" id="edificacion" class="monto" placeholder="0.00" inputmode="decimal">
+        </div>
+        <div class="input-group">
+          <label>Maquinarias</label>
+          <input type="text" id="maquinarias" class="monto" placeholder="0.00" inputmode="decimal">
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-group">
+          <label>Existencias</label>
+          <input type="text" id="existencias" class="monto" placeholder="0.00" inputmode="decimal">
+        </div>
+        <div class="input-group">
+          <label>Mobiliario</label>
+          <input type="text" id="mobiliario" class="monto" placeholder="0.00" inputmode="decimal">
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-group">
+          <label>Equipos electrónicos</label>
+          <input type="text" id="eqElectronico" class="monto" placeholder="0.00" inputmode="decimal">
+        </div>
+        <div class="input-group">
+          <label>Suministros</label>
+          <input type="text" id="suministros" class="monto" placeholder="0.00" inputmode="decimal">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Vidrios</label>
+        <input type="text" id="vidrios" class="monto" placeholder="0.00" inputmode="decimal">
+      </div>
+
+      <div class="vrta-box">
+        <div style="font-size:0.8rem; color:#555;">VRTA (Valor Real Total Asegurado)</div>
+        <span id="vrtaDisplay">0.00</span>
+      </div>
+
+      <div class="section-title">📋 COBERTURAS Y LÍMITES</div>
+      <div class="coverage-list" id="coberturasContainer">
+        <!-- Se llena desde JS -->
+      </div>
+
+      <div class="prima-box">
+        <div style="font-size:0.8rem; opacity:0.8;">PRIMA ANUAL (0.21%)</div>
+        <span id="primaDisplay">0.00</span>
+      </div>
+
+      <div class="buttons">
+        <button class="btn btn-pdf" id="btnPdf">📄 Exportar PDF</button>
+        <button class="btn btn-wa" id="btnWa">💬 Enviar por WhatsApp</button>
+        <button class="btn btn-email" id="btnEmail">✉️ Enviar por Correo</button>
+      </div>
+      <div style="text-align:center; margin-top: 1rem; font-size:0.7rem; color:#999;">
+        Cotizador v1.0 · Agregar a inicio para acceso rápido
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Elementos del DOM
+      const inputs = {
+        cliente: document.getElementById('cliente'),
+        actividad: document.getElementById('actividad'),
+        agente: document.getElementById('agente'),
+        edificacion: document.getElementById('edificacion'),
+        maquinarias: document.getElementById('maquinarias'),
+        existencias: document.getElementById('existencias'),
+        mobiliario: document.getElementById('mobiliario'),
+        eqElectronico: document.getElementById('eqElectronico'),
+        suministros: document.getElementById('suministros'),
+        vidrios: document.getElementById('vidrios')
+      };
+      const vrtaDisplay = document.getElementById('vrtaDisplay');
+      const coberturasContainer = document.getElementById('coberturasContainer');
+      const primaDisplay = document.getElementById('primaDisplay');
+
+      // Formateo de moneda
+      const formatearMoneda = (valor) => {
+        return valor.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      };
+
+      // Limpiar formato para cálculo
+      const limpiarNumero = (str) => {
+        if (!str) return 0;
+        return parseFloat(str.replace(/,/g, '')) || 0;
+      };
+
+      // Actualiza formato mientras escribe (agrega comas de miles y dos decimales)
+      const aplicarFormato = (input) => {
+        let val = input.value.replace(/[^0-9.]/g, '');
+        if (val === '') return;
+        let num = parseFloat(val);
+        if (isNaN(num)) { input.value = ''; return; }
+        input.value = formatearMoneda(num);
+      };
+
+      // Asignar evento input a todos los campos de monto
+      document.querySelectorAll('.monto').forEach(inp => {
+        inp.addEventListener('input', () => aplicarFormato(inp));
+        inp.addEventListener('blur', () => {
+          if (inp.value === '') inp.value = '0.00';
+          actualizarCotizacion();
+        });
+      });
+
+      // Obtener valores numéricos de las partidas
+      const obtenerValores = () => {
+        return {
+          cliente: inputs.cliente.value.trim() || 'No especificado',
+          actividad: inputs.actividad.value.trim() || 'No especificada',
+          agente: inputs.agente.value.trim() || 'No especificado',
+          edificacion: limpiarNumero(inputs.edificacion.value),
+          maquinarias: limpiarNumero(inputs.maquinarias.value),
+          existencias: limpiarNumero(inputs.existencias.value),
+          mobiliario: limpiarNumero(inputs.mobiliario.value),
+          eqElectronico: limpiarNumero(inputs.eqElectronico.value),
+          suministros: limpiarNumero(inputs.suministros.value),
+          vidrios: limpiarNumero(inputs.vidrios.value)
+        };
+      };
+
+      const actualizarCotizacion = () => {
+        const v = obtenerValores();
+        const vrta = v.edificacion + v.maquinarias + v.existencias + v.mobiliario + v.eqElectronico + v.suministros + v.vidrios;
+        vrtaDisplay.textContent = formatearMoneda(vrta);
+
+        // Cálculo de coberturas
+        const incendio = vrta;                    // Incendio Básica = VRTA
+        const motin = vrta * 0.30;
+        const robo = vrta * 0.30;
+        const inundacion = 10000;
+        const vidriosVal = v.vidrios;
+        const daniosInternos = v.maquinarias + v.eqElectronico;
+        const rcGeneral = 10000;
+        const rcAmbiental = 2000;
+        const prima = vrta * 0.0021;
+
+        // Renderizar tabla de coberturas
+        coberturasContainer.innerHTML = `
+          <div class="coverage-item"><span>Incendio Básica (100% VRTA)</span> <strong>${formatearMoneda(incendio)}</strong></div>
+          <div class="coverage-item"><span>Motín y disturbios (30%)</span> <strong>${formatearMoneda(motin)}</strong></div>
+          <div class="coverage-item"><span>Robo, asalto y atraco (30%)</span> <strong>${formatearMoneda(robo)}</strong></div>
+          <div class="coverage-item"><span>Inundación y daños por agua</span> <strong>${formatearMoneda(inundacion)}</strong></div>
+          <div class="coverage-item"><span>Terremoto</span> <strong>Según condiciones</strong></div>
+          <div class="coverage-item"><span>Extensión de cobertura</span> <strong>Según condiciones</strong></div>
+          <div class="coverage-item"><span>Vidrios (valor partida)</span> <strong>${formatearMoneda(vidriosVal)}</strong></div>
+          <div class="coverage-item"><span>Daños internos maq. y equipos</span> <strong>${formatearMoneda(daniosInternos)}</strong></div>
+          <div class="coverage-item"><span>Responsabilidad Civil General</span> <strong>${formatearMoneda(rcGeneral)}</strong></div>
+          <div class="coverage-item"><span>Resp. Civil Ambiental</span> <strong>${formatearMoneda(rcAmbiental)}</strong></div>
+        `;
+
+        primaDisplay.textContent = formatearMoneda(prima);
+      };
+
+      // Evento para capturar cambios mientras escriben (sin esperar blur) en campos de texto
+      ['cliente','actividad','agente'].forEach(id => {
+        document.getElementById(id).addEventListener('input', actualizarCotizacion);
+      });
+
+      // Iniciar con valores por defecto
+      document.querySelectorAll('.monto').forEach(inp => inp.value = '0.00');
+      actualizarCotizacion();
+
+      // ------------------- FUNCIONES DE EXPORTACIÓN -------------------
+      const generarPDFBlob = () => {
+        const v = obtenerValores();
+        const vrta = limpiarNumero(vrtaDisplay.textContent);
+        const prima = limpiarNumero(primaDisplay.textContent);
+        const doc = new jspdf.jsPDF();
+        doc.setFontSize(16);
+        doc.text("Cotización de Seguro Industria y Comercio", 14, 20);
+        doc.setFontSize(11);
+        doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 14, 28);
+        doc.text(`Cliente: ${v.cliente}`, 14, 36);
+        doc.text(`Actividad: ${v.actividad}`, 14, 42);
+        doc.text(`Agente: ${v.agente}`, 14, 48);
+        
+        doc.setFontSize(12);
+        doc.text("Partidas Aseguradas (USD)", 14, 60);
+        const partidas = [
+          ['Edificación', v.edificacion],
+          ['Maquinarias', v.maquinarias],
+          ['Existencias', v.existencias],
+          ['Mobiliario', v.mobiliario],
+          ['Equipos Electrónicos', v.eqElectronico],
+          ['Suministros', v.suministros],
+          ['Vidrios', v.vidrios]
+        ];
+        let y = 68;
+        partidas.forEach(([nombre, valor]) => {
+          doc.text(`${nombre}: ${formatearMoneda(valor)}`, 14, y);
+          y += 6;
+        });
+        doc.text(`VRTA TOTAL: ${formatearMoneda(vrta)}`, 14, y+4);
+        
+        y += 14;
+        doc.text("Coberturas y Límites", 14, y);
+        y += 8;
+        const coberturas = [
+          ['Incendio Básica (100% VRTA)', vrta],
+          ['Motín y disturbios (30%)', vrta*0.3],
+          ['Robo, asalto y atraco (30%)', vrta*0.3],
+          ['Inundación y daños por agua', 10000],
+          ['Vidrios', v.vidrios],
+          ['Daños internos maq. y eq.', v.maquinarias+v.eqElectronico],
+          ['RC General', 10000],
+          ['RC Ambiental', 2000]
+        ];
+        coberturas.forEach(([nombre, valor]) => {
+          doc.text(`${nombre}: ${formatearMoneda(valor)}`, 14, y);
+          y += 6;
+        });
+        doc.setFontSize(14);
+        doc.text(`PRIMA ANUAL: USD ${formatearMoneda(prima)}`, 14, y+8);
+        return doc.output('blob');
+      };
+
+      // Botón PDF
+      document.getElementById('btnPdf').addEventListener('click', () => {
+        const blob = generarPDFBlob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `cotizacion_${inputs.cliente.value || 'cliente'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+
+      // Función compartir nativo (WhatsApp/Correo)
+      const compartirConPDF = async (fallbackMensaje) => {
+        const v = obtenerValores();
+        const vrta = limpiarNumero(vrtaDisplay.textContent);
+        const prima = limpiarNumero(primaDisplay.textContent);
+        const blob = generarPDFBlob();
+        const file = new File([blob], `cotizacion_${v.cliente.replace(/\s/g,'_')}.pdf`, { type: 'application/pdf' });
+        const shareData = {
+          title: 'Cotización de Seguro',
+          text: `Cotización para ${v.cliente}. VRTA: USD ${formatearMoneda(vrta)}, Prima: USD ${formatearMoneda(prima)}`,
+          files: [file]
+        };
+        if (navigator.canShare && navigator.canShare(shareData)) {
+          try {
+            await navigator.share(shareData);
+          } catch (err) {
+            console.log('Compartir cancelado o no soportado', err);
+            fallbackMensaje();
+          }
+        } else {
+          fallbackMensaje();
+        }
+      };
+
+      // WhatsApp
+      document.getElementById('btnWa').addEventListener('click', async () => {
+        const v = obtenerValores();
+        const vrta = limpiarNumero(vrtaDisplay.textContent);
+        const prima = limpiarNumero(primaDisplay.textContent);
+        const fallback = () => {
+          const texto = `Hola, te comparto la cotización de Industria y Comercio:\n\n` +
+            `Cliente: ${v.cliente}\nActividad: ${v.actividad}\nAgente: ${v.agente}\n\n` +
+            `VRTA: USD ${formatearMoneda(vrta)}\nPrima Anual: USD ${formatearMoneda(prima)}\n\n` +
+            `Saludos.`;
+          window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+        };
+        await compartirConPDF(fallback);
+      });
+
+      // Correo
+      document.getElementById('btnEmail').addEventListener('click', async () => {
+        const v = obtenerValores();
+        const vrta = limpiarNumero(vrtaDisplay.textContent);
+        const prima = limpiarNumero(primaDisplay.textContent);
+        const fallback = () => {
+          const asunto = `Cotización de Seguro - ${v.cliente}`;
+          let cuerpo = `COTIZACIÓN DE SEGURO INDUSTRIA Y COMERCIO\n` +
+            `===========================================\n` +
+            `Cliente: ${v.cliente}\nActividad: ${v.actividad}\nAgente: ${v.agente}\n\n` +
+            `PARTIDAS ASEGURABLES (USD):\n` +
+            `Edificación: ${formatearMoneda(v.edificacion)}\n` +
+            `Maquinarias: ${formatearMoneda(v.maquinarias)}\n` +
+            `Existencias: ${formatearMoneda(v.existencias)}\n` +
+            `Mobiliario: ${formatearMoneda(v.mobiliario)}\n` +
+            `Equipos Electrónicos: ${formatearMoneda(v.eqElectronico)}\n` +
+            `Suministros: ${formatearMoneda(v.suministros)}\n` +
+            `Vidrios: ${formatearMoneda(v.vidrios)}\n\n` +
+            `VRTA TOTAL: ${formatearMoneda(vrta)}\n\n` +
+            `COBERTURAS:\n` +
+            `Incendio Básica (100% VRTA): ${formatearMoneda(vrta)}\n` +
+            `Motín y disturbios (30%): ${formatearMoneda(vrta*0.3)}\n` +
+            `Robo, asalto y atraco (30%): ${formatearMoneda(vrta*0.3)}\n` +
+            `Inundación y daños por agua: 10,000.00\n` +
+            `Vidrios: ${formatearMoneda(v.vidrios)}\n` +
+            `Daños internos: ${formatearMoneda(v.maquinarias+v.eqElectronico)}\n` +
+            `RC General: 10,000.00\n` +
+            `RC Ambiental: 2,000.00\n\n` +
+            `PRIMA ANUAL (0.21%): USD ${formatearMoneda(prima)}\n\n` +
+            `Saludos,\n${v.agente}`;
+          window.location.href = `mailto:?subject=${encodeURIComponent(asunto)}&body=${encodeURIComponent(cuerpo)}`;
+        };
+        await compartirConPDF(fallback);
+      });
+
+      // Registrar Service Worker para PWA (opcional pero recomendado)
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
