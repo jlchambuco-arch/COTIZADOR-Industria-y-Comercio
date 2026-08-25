@@ -302,9 +302,8 @@
         const daniosInternos = v.maquinarias + v.eqElectronico;
         const rcGeneral = 10000;
         const rcAmbiental = 2000;
-        const prima = vrta * 0.0021;
-
-        // Renderizar tabla de coberturas
+        const prima = vrta * 0.0032;
+        
         coberturasContainer.innerHTML = `
           <div class="coverage-item"><span>Incendio Básica (100% VRTA)</span> <strong>${formatearMoneda(incendio)}</strong></div>
           <div class="coverage-item"><span>Motín y disturbios (30%)</span> <strong>${formatearMoneda(motin)}</strong></div>
